@@ -129,6 +129,9 @@ class Mixer(object):
                         self.bad_artists.add(tinfo['artist'])
                     else:
                         break
+                    
+                    
+        'jjj'
 
             if self.bad_track_source:
                 while True:
