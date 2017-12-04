@@ -1,5 +1,12 @@
 import pbl
 import sys
+import spotipy
+from spotipy.oauth2 import SpotifyClientCredentials
+
+pbl.spotify_access_token()
+
+client_credentials_manager = SpotifyClientCredentials(client_id = '5c96a41586b5462d811dc1fc0a57dcb6', client_secret = '2f1189d85ee448a99bd1129ccfa10549')
+sp = spotipy.Spotify(client_credentials_manager=client_credentials_manager)
 
 class Mixer(object):
     '''
@@ -9,10 +16,11 @@ class Mixer(object):
 
     def __init__(self, source_list, bad_track_source_list, bad_artist_source_list,
     dedup, min_artist_separation, fail_fast, max_tracks):
+        #source_list = [p1, p2, p3], bad_track_source_list = None, bad_artist_source_list = None, dedup = True, min_artist_separation = 5, fail_fast = False, max_tracks = 50)
         '''
         '''
         self.name = 'mixer'
-        self.source_list = [pbl.PushableSource(s) for s in source_list]
+        self.source_list = [pbl.PushableSource(s) for s in source_list]     #PushableSource is a class-object, see the possible methods at: https://github.com/plamere/pbl/blob/master/pbl/standard_plugs.py
         self.bad_track_source = pbl.Concatenate(bad_track_source_list) if bad_track_source_list else None
         self.bad_artist_source = pbl.Concatenate(bad_artist_source_list) if bad_artist_source_list else None
         self.dedup = dedup
@@ -129,9 +137,7 @@ class Mixer(object):
                         self.bad_artists.add(tinfo['artist'])
                     else:
                         break
-                    
-                    
-        'jjj'
+
 
             if self.bad_track_source:
                 while True:
@@ -143,16 +149,23 @@ class Mixer(object):
 
             self.artist_history = []
             self.track_history = set()
+            
+
+playlists = sp.user_playlists('spotify')  
+playlists = sp.user_playlist('11127823027', playlist_id = 'spotify:user:11127823027:playlist:4q2EdEdze8KOt9DcwWzsfd') 
+# sp.user_playlist('ailujadu', playlist_id)
+#pbl.spotify_access_token()
+
 
 if __name__ == '__main__':
     import sys
     # first test
     p1 = pbl.ArtistTopTracks(name='Ravenscry')
     p2 = pbl.ArtistTopTracks(name='weezer')
-    p2 = pbl.ArtistTopTracks(name='weezer')
+    #p2 = pbl.ArtistTopTracks(name='weezer')
     p3 = pbl.PlaylistSource(name='RapCaviar')
     mi = Mixer([p1, p2, p3], None, None, True, 5, False, 50)
-    pbl.show_source(mi)
+    pbl.show_source(mi)                                                                         #no client id?
     p1 = pbl.PlaylistSource(name='RapCaviar')
     p2 = pbl.PlaylistSource(name='Rise & Shine')
     p3 = pbl.PlaylistSource(name='extender test', uri='spotify:user:plamere:playlist:7pcDE4xQBZtz3brznnEN8L')
