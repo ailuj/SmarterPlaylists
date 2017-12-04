@@ -7,7 +7,7 @@ class Mixer(object):
         based upon a set of rules
     '''
 
-    def __init__(self, source_list, bad_track_source_list, bad_artist_source_list, 
+    def __init__(self, source_list, bad_track_source_list, bad_artist_source_list,
     dedup, min_artist_separation, fail_fast, max_tracks):
         '''
         '''
@@ -15,7 +15,7 @@ class Mixer(object):
         self.source_list = [pbl.PushableSource(s) for s in source_list]
         self.bad_track_source = pbl.Concatenate(bad_track_source_list) if bad_track_source_list else None
         self.bad_artist_source = pbl.Concatenate(bad_artist_source_list) if bad_artist_source_list else None
-        self.dedup = dedup 
+        self.dedup = dedup
         self.min_artist_separation = min_artist_separation
         self.fail_fast = fail_fast
         self.max_tracks = max_tracks
@@ -26,6 +26,7 @@ class Mixer(object):
         self.artist_history = None
         self.cur_channel = 0
         self.prepped = False
+
 
     def next_track(self):
         self.prep()
@@ -59,20 +60,21 @@ class Mixer(object):
                 else:
                     if could_be_good:
                         pushback.append(candidate_track)
-                        
+
         return None
 
-                
     def push(self, pushback):
         if self.retry_tracks:
             for t in reversed(pushback):
                 self.push_track(t)
 
+    """get track info, add track to track_history and artist to artist_history."""
     def add_to_history(self, track):
         tinfo = pbl.tlib.get_track(track)
         self.track_history.add(track)
         self.artist_history.append(tinfo['artist'])
 
+    """switch current channel. If current channel > length of source_list, set cur_channel to 0."""
     def next_channel(self):
         self.cur_channel += 1
         if self.cur_channel >= len(self.source_list):
@@ -84,6 +86,9 @@ class Mixer(object):
     def push_track(self,track):
         return self.source_list[self.cur_channel].push(track)
 
+    """decide whether a track is a good candidate: if track is in bad_tracks or artist is in bad_artists,
+    the track is not a good candidate (no idea what dedup does).
+    """
     def good_candidate(self, track):
         tinfo = pbl.tlib.get_track(track)
         artist = tinfo['artist']
@@ -103,13 +108,16 @@ class Mixer(object):
             return False, self.min_artist_separation < self.max_tracks
         return True, True
 
+    """if artist is in artist_history, return length of artist_history + 1
+    else return maximum int allowed by Python"""
     def get_artist_sep(self, artist):
         for idx, hartist in enumerate(reversed(self.artist_history)):
             if artist == hartist:
                 return idx + 1
         return sys.maxint
-            
 
+    """if exists, loop through bad_artist_source and adds track info to bad_artists,
+    then if exists, loop through bad_track_source and add tracks to bad_tracks"""
     def prep(self):
         if not self.prepped:
             self.prepped = True
@@ -151,4 +159,3 @@ if __name__ == '__main__':
     mi = Mixer([p1, p2, p3, p4, p5], [skip], [], True, 2, False, 100)
     pbl.show_source(mi, props=['source'])
     # second test
-
